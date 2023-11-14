@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  web:
+    image: nginx:latest
+    container_name: web_tenancy
+    ports:
+      - "8001:80"
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    links:
+      - api
+    networks:
+      - tenancy
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: api_tenancy
+    ports:
+      - 9001:9001
+    volumes:
+      - .:/var/www
+    networks:
+      - tenancy
+  mysql:
+    image: mysql:latest
+    container_name: database_tenancy
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - tenancy
+networks:
+  tenancy:
